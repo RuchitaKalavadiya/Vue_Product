@@ -1,17 +1,23 @@
 <template>
   <div class="login-wrapper">
     <h1>Register User</h1>
-    <div>
-      <input placeholder="Email" v-model="email" />
-    </div>
+    <div>Email: <input placeholder="Email" v-model="email" /></div>
     <div class="mt-10">
-      <input placeholder="Password" v-model="password" />
+      Password:
+      <input placeholder="Password" v-model="password" type="password" />
     </div>
 
     <div class="mt-10">
-      <input placeholder="Confirm Password" v-model="confirmPswd" />
+      Confirm Password:
+      <input
+        placeholder="Confirm Password"
+        v-model="confirmPswd"
+        type="password"
+      />
     </div>
     <div class="mt-10">
+      <button @click="onLogin" class="mr-5">Back to Login</button>
+
       <button @click="onRegiter" class="mr-5">Register User</button>
     </div>
     <div class="error-msg mt-10">{{ errorMsg }}</div>
@@ -31,6 +37,9 @@ export default Vue.extend({
     };
   },
   methods: {
+    onLogin() {
+      this.$router.push("/");
+    },
     onRegiter() {
       if (
         this.email !== "" &&

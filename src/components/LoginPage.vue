@@ -1,17 +1,18 @@
 <template>
   <div class="login-wrapper">
     <h1>Log in page</h1>
-    <div>
-      <input placeholder="Email" v-model="email" />
-    </div>
+    <div>Email: <input placeholder="Email" v-model="email" /></div>
     <div class="mt-10">
-      <input placeholder="Password" v-model="password" />
+      Password:
+      <input placeholder="Password" v-model="password" type="password" />
     </div>
     <div class="mt-10">
       <button @click="onLogin" class="mr-5">Log in</button>
-      <button @click="onRegister">Register</button>
     </div>
-    <div class="error-msg mt-10"></div>
+    <div>
+      <button @click="onRegister" class="mt-10">Register User</button>
+    </div>
+    <div class="error-msg mt-10">{{ errorMsg }}</div>
   </div>
 </template>
 

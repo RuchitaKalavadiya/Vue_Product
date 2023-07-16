@@ -61,11 +61,10 @@ export default Vue.extend({
       }, 3000);
     },
     onAddProduct() {
-      this.$router.push("add");
+      this.$router.push(`/product/-1`);
     },
     onUpdate(itemId) {
-      this.$router.push(`/update/${itemId}`);
-      console.log(itemId);
+      this.$router.push(`/product/${itemId}`);
     },
     onRemove(itemId) {
       console.log(itemId);
