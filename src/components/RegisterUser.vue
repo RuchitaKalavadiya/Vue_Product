@@ -17,8 +17,7 @@
     </div>
     <div class="mt-10">
       <button @click="onLogin" class="mr-5">Back to Login</button>
-
-      <button @click="onRegiter" class="mr-5">Register User</button>
+      <button @click="onRegiter">Register User</button>
     </div>
     <div class="error-msg mt-10">{{ errorMsg }}</div>
   </div>
@@ -26,6 +25,8 @@
 
 <script>
 import Vue from "vue";
+import ProductService from "../services/service.js";
+
 export default Vue.extend({
   name: "Register",
   data() {
@@ -34,13 +35,16 @@ export default Vue.extend({
       password: "",
       confirmPswd: "",
       errorMsg: "",
+      loading: false,
+      productService: new ProductService(),
     };
   },
   methods: {
     onLogin() {
       this.$router.push("/");
     },
-    onRegiter() {
+    async onRegiter() {
+      console.log("regoster click");
       if (
         this.email !== "" &&
         this.password !== "" &&
@@ -49,20 +53,18 @@ export default Vue.extend({
         if (this.password !== this.confirmPswd) {
           this.errorMsg = "Password and confirm password should be same!";
         } else {
-          fetch("http://dignizant.com:4040/api/registration", {
-            method: "POST",
-            body: JSON.stringify({
+          this.loading = true;
+          try {
+            await this.productService.registerUser({
               email: this.email,
               password: this.password,
-            }),
-          })
-            .then((response) => {
-              console.log(response);
-            })
-            .catch((error) => {
-              console.error("error", { error });
             });
-          this.$router.push("/listing");
+          } catch (error) {
+            console.error({ error });
+          } finally {
+            this.loading = false;
+            this.$router.push("/listing");
+          }
         }
       } else {
         this.errorMsg = "Please enter valid input!";

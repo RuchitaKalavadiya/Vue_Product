@@ -4,8 +4,7 @@
     <div style="text-align: end; padding-right: 120px">
       <button @click="onAddProduct">+ Add Product</button>
     </div>
-    <div v-if="loading">Loading products...</div>
-    <div v-else class="card-wrapper">
+    <div class="card-wrapper">
       <div
         v-for="(product, index) in products"
         :key="index"
@@ -22,43 +21,59 @@
           </div>
         </div>
       </div>
+
+      <div v-if="loading">Loading products...</div>
     </div>
   </div>
 </template>
 
 <script>
 import Vue from "vue";
-import { response } from "../assets/dummyResponse.js";
+import ProductService from "../services/service.js";
+
 export default Vue.extend({
-  name: "ListingPahe",
+  name: "ListingPage",
   data() {
     return {
-      loading: true,
+      loading: false,
       products: [],
       page: 1,
+      limit: 9,
+      totalPage: 1,
+      productService: new ProductService(),
     };
   },
   mounted() {
     this.getAllProducts();
+    window.addEventListener("scroll", (event) => this.onWindowScroll(event));
   },
   methods: {
-    getAllProducts() {
-      //   fetch("http://dignizant.com:4040/api/getProduct", {
-      //     method: "GET",
-      //     "Content-Type": "application/json",
-      //   })
-      //     .then((response) => {
-      //       console.log("response", response);
-      //     })
-      //     .catch((error) => {
-      //       console.log("error", error);
-      //     });
-      //   this.loading = false;
-
-      setTimeout(() => {
-        this.products = response.products;
+    async onWindowScroll() {
+      const currentScrollHeight = window.scrollY;
+      const totalPageHeight =
+        document.documentElement.scrollHeight -
+        document.documentElement.clientHeight;
+      if (currentScrollHeight > totalPageHeight - 30) {
+        if (this.totalPage > this.page) {
+          this.page = this.page + 1;
+          await this.getAllProducts();
+        }
+      }
+    },
+    async getAllProducts() {
+      this.loading = true;
+      try {
+        const response = await this.productService.getAllProducts(
+          this.page,
+          this.limit
+        );
+        this.totalPage = response.totalPages;
+        this.products = [...response.products, ...this.products];
+      } catch (error) {
+        console.log("error", error);
+      } finally {
         this.loading = false;
-      }, 3000);
+      }
     },
     onAddProduct() {
       this.$router.push(`/product/-1`);
@@ -66,19 +81,12 @@ export default Vue.extend({
     onUpdate(itemId) {
       this.$router.push(`/product/${itemId}`);
     },
-    onRemove(itemId) {
-      console.log(itemId);
-      fetch(`http://dignizant.com:4040/api/deleteProduct/${itemId}`, {
-        method: "DELETE",
-        "Content-Type": "application/json",
-      })
-        .then((response) => {
-          console.log("response", response);
-        })
-        .catch((error) => {
-          console.log("error", error);
-        });
-      this.loading = false;
+    async onRemove(itemId) {
+      try {
+        await this.productService.removeProduct(itemId);
+      } catch (error) {
+        console.error({ error });
+      }
     },
   },
 });

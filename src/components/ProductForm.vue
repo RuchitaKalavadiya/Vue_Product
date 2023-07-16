@@ -31,6 +31,7 @@
 
 <script>
 import Vue from "vue";
+import ProductService from "../services/service.js";
 export default Vue.extend({
   name: "ProductForm",
   data() {
@@ -44,14 +45,15 @@ export default Vue.extend({
       category: "",
       images: null,
       errorMsg: "",
+      productService: new ProductService(),
     };
   },
   computed: {
     productId() {
-      return Number(this.$route.params.id);
+      return this.$route.params.id;
     },
     isCreate() {
-      return this.productId === -1;
+      return this.productId == -1;
     },
   },
   mounted() {
@@ -63,36 +65,35 @@ export default Vue.extend({
     onBack() {
       this.$router.push("/listing");
     },
-    fetchDataById() {
-      fetch(`http://dignizant.com:4040/api/getOneProduct/${this.productId}`, {
-        method: "GET",
-      })
-        .then((response) => {
-          const {
-            title,
-            description,
-            price,
-            rating,
-            stock,
-            brand,
-            category,
-            images,
-          } = response;
-          this.title = title || "Product";
-          this.description = description || "description";
-          this.price = price || 10;
-          this.rating = rating || "4.5";
-          this.stock = stock || 60;
-          this.brand = brand || "brand";
-          this.category = category || "caategory";
-          this.images = images || [];
-          console.log(response);
-        })
-        .catch((error) => {
-          console.error("error", { error });
-        });
+    async fetchDataById() {
+      try {
+        const response = await this.productService.getProductById(
+          this.productId
+        );
+        const product = response.products[0];
+        const {
+          title,
+          description,
+          price,
+          rating,
+          stock,
+          brand,
+          category,
+          images,
+        } = product;
+        this.title = title;
+        this.description = description;
+        this.price = price;
+        this.rating = rating;
+        this.stock = stock;
+        this.brand = brand;
+        this.category = category;
+        this.images = images;
+      } catch (error) {
+        console.error("error", { error });
+      }
     },
-    onSave() {
+    async onSave() {
       if (
         this.title &&
         this.description &&
@@ -112,31 +113,15 @@ export default Vue.extend({
           category: this.category,
           images: this.images,
         };
-        if (this.isCreate) {
-          fetch("http://dignizant.com:4040/api/addProduct", {
-            method: "POST",
-            body: JSON.stringify(payload),
-          })
-            .then((response) => {
-              console.log(response);
-            })
-            .catch((error) => {
-              console.error("error", { error });
-            });
-        } else {
-          fetch(
-            `http://dignizant.com:4040/api/updateProduct/${this.productId}`,
-            {
-              method: "PUT",
-              body: JSON.stringify(payload),
-            }
-          )
-            .then((response) => {
-              console.log(response);
-            })
-            .catch((error) => {
-              console.error("error", { error });
-            });
+
+        try {
+          if (this.isCreate) {
+            await this.productService.createProduct(payload);
+          } else {
+            await this.productService.updateProduct(payload, this.productId);
+          }
+        } catch (error) {
+          console.error("error", { error });
         }
       } else {
         this.errorMsg = "Something is missing";

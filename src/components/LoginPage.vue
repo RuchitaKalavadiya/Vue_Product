@@ -18,6 +18,8 @@
 
 <script>
 import Vue from "vue";
+import ProductService from "../services/service.js";
+
 export default Vue.extend({
   name: "Login",
   data() {
@@ -25,26 +27,22 @@ export default Vue.extend({
       email: "",
       password: "",
       errorMsg: "",
+      productService: new ProductService(),
     };
   },
   methods: {
-    onLogin() {
+    async onLogin() {
       if (this.email !== "" && this.password !== "") {
-        fetch("http://dignizant.com:4040/api/login", {
-          method: "POST",
-          body: JSON.stringify({
+        try {
+          await this.productService.loginUser({
             email: this.email,
             password: this.password,
-          }),
-        })
-          .then((response) => {
-            console.log(response.message);
-          })
-          .catch((error) => {
-            console.error("error", { error });
           });
-
-        this.$router.push("/listing");
+        } catch (error) {
+          console.error({ error });
+        } finally {
+          this.$router.push("/listing");
+        }
       } else {
         this.errorMsg = "Please enter email and password!";
       }
